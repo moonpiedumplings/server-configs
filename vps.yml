@@ -1,0 +1,41 @@
+---
+- name: To configure my server(s)
+  hosts: moontron
+  gather_facts: true
+
+  tasks:
+    - name: Test task
+      ansible.builtin.debug:
+        msg: "hello?"
+    - name: Create caddy directory
+      ansible.builtin.file:
+        path: "/root/caddy/{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "config"
+        - "data"
+        - "caddy_config"
+    - name: Create caddy configs
+      ansible.builtin.template:
+        src: "templates/ext-Caddyfile.j2"
+        dest: "/root/caddy/config/Caddyfile"
+        mode: '0644'
+    - name: Run podman caddy container
+      become: true
+      containers.podman.podman_container:
+        name: caddy
+        image: docker.io/caddy
+        state: started
+        ports:
+          - "80:80"
+          - "443:443"
+        volumes:
+          - "/root/caddy/config/Caddyfile:/etc/caddy/Caddyfile"
+          - "/root/caddy/data:/data"
+          - "/root/caddy/caddy_config:/config"
+        cap_add:
+          - NET_ADMIN
+        restart_policy: "on-failure"
+        force_restart: true
+

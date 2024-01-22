@@ -1,0 +1,12 @@
+
+http://*.moonpiedumpl.ing { 
+  reverse_proxy * http://192.168.17.197:8080 {
+    header_up Host {http.reverse_proxy.upstream.hostport}
+    header_up X-Forwarded-For {http.request.remote}
+    header_up X-Real-IP {http.reverse_proxy.upstream.port}
+  }
+}
+
+# *.moonpiedumpl.ing:443
+
+# reverse_proxy 192.168.17.197:8443
