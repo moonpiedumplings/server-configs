@@ -1,5 +1,5 @@
 ---
-- name: Configure the vps
+- name: Configure the internal, physical server
   hosts: moonstack
 
   vars:
@@ -39,7 +39,7 @@
           containers.podman.podman_container:
             name: caddy
             image: docker.io/caddy
-            state: started
+            state: absent # or started
             ports:
               - "8080:80"
               - "8443:443"

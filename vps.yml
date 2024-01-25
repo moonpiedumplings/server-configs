@@ -26,7 +26,7 @@
       containers.podman.podman_container:
         name: caddy
         image: docker.io/caddy
-        state: started
+        state: absent # as opposed to "started"
         ports:
           - "80:80"
           - "443:443"
