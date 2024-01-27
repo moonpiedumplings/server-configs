@@ -38,4 +38,3 @@
           - NET_ADMIN
         restart_policy: "on-failure"
         force_restart: true
-

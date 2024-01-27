@@ -1,0 +1,12 @@
+# client.toml
+[client]
+remote_addr = "" # The address of the server. The port must be the same with the port in `server.bind_addr`
+
+[client.services.http]
+token = "{{ rathole_secret }}" # Must be the same with the server to pass the validation
+local_addr = "127.0.0.1:8080" # The address of the service that needs to be forwarded
+
+
+[client.services.httpd]
+token = "{{ rathole_secret }}"
+local_addr = "127.0.0.1:8443"
