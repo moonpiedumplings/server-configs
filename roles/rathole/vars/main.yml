@@ -1,0 +1,9 @@
+# Whether to build the rathole container or not
+rathole_container_build: false
+
+# Which features to include. Defaults are defaults
+# See https://github.com/rapiz1/rathole/blob/main/Cargo.toml for defautls
+rathole_container_features: ["server", "client", "tls", "noise", "websocket", "hot-reload"]
+
+# Whether to upload the container
+rathole_container_upload: false
