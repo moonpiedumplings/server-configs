@@ -1,11 +1,20 @@
-FROM rust:1-alpine3.19
+# Debian bookworm
+FROM rust:latest as stage0
 
 ENV RUSTFLAGS="-C target-feature=+crt-static"
 
-ENV OPENSSL_NO_VENDOR="n"
+ENV DEBIAN_FRONTEND="noninteractive"
 
-RUN apk add git build-base openssl-dev musl-dev libc6-compat
+RUN apt-get update -y &&  apt-get install musl-tools -y
 
-RUN cargo build --release --target x86_64-unknown-linux-musl
+RUN git clone https://github.com/rapiz1/rathole
 
-WORKDIR /app
+RUN rustup target install x86_64-unknown-linux-musl
+
+RUN cd rathole && cargo build --release --target x86_64-unknown-linux-musl
+
+FROM scratch as stage1
+
+COPY --from=stage0 /rathole/target/x86_64-unknown-linux-musl/release/rathole /bin/rathole
+
+CMD ["/bin/rathole"]
