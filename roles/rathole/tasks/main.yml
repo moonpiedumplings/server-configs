@@ -3,3 +3,24 @@
   when: rathole_build_container
   ansible.builtin.include_tasks:
     file: tasks/container.yml
+- name: Do podmaner container
+  become: "{{ rathole_user }}"
+  block:
+    - name: Create rathole config
+      ansible.builtin.file:
+        path: "{{ lookup('ansible.builtin.env', 'HOME') }}/rathole/config"
+        state: directory
+        mode: '0775'
+    - name: deploy template
+      ansible.builtin.template:
+        src: "templates/{{ rathole_role }}.toml.j2"
+        dest: "{{ lookup('ansible.builtin.env', 'HOME') }}/rathole/config.toml"
+        mode: '0644'
+    - name: Deploy rathole podman container
+      containers.podman.podman_container:
+        name: rathole
+        image: docker.io/moonpiedumplings/rathole
+        network: host
+        volumes:
+          - "{{ lookup('ansible.builtin.env', 'HOME') }}/rathole:/config/"
+        command: "rathole --{{ rathole_role }} /config/config.toml"

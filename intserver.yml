@@ -4,6 +4,9 @@
 
   vars:
     sample_var: "a string"
+  
+  roles:
+    - role: rathole
 
   tasks:
     - name: hello
@@ -39,7 +42,7 @@
           containers.podman.podman_container:
             name: caddy
             image: docker.io/caddy
-            state: absent # or started
+            state: started # or absent
             ports:
               - "8080:80"
               - "8443:443"
@@ -51,23 +54,3 @@
               - NET_ADMIN
             restart_policy: "on-failure"
             force_restart: true
-            restart_policy: "on-failure"
-        - name: Create rathole config directory
-          ansible.builtin.file:
-            path: "/home/podmaner/rathole"
-            state: directory
-            mode: '0755'
-        - name: Template rathole container
-          ansible.builtin.template:
-            src: "templates/int-rathole-client.toml.j2"
-            dest: "/home/podmaner/rathole/config.toml"
-            mode: '0644'
-        - name: Deploy rathole container
-          containers.podman.podman_container:
-            name: rathole
-            image: docker.io/moonpiedumplings/rathole
-            network: host
-            volumes:
-              - "/home/podmaner/rathole:/config/"
-            command: "rathole /config/config.toml"
-            restart_policy: "on-failure"

@@ -7,3 +7,7 @@ rathole_container_features: ["server", "client", "tls", "noise", "websocket", "h
 
 # Whether to upload the container
 rathole_container_upload: false
+
+rathole_user: root # User to run rathole as
+
+rathole_role: # "server" or "client", the role rathole should play. 
