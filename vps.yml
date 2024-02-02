@@ -7,34 +7,26 @@
     - name: Test task
       ansible.builtin.debug:
         msg: "hello?"
-    - name: Create caddy directory
+    - name: Delete caddy directory
       ansible.builtin.file:
-        path: "/root/caddy/{{ item }}"
+        path: "/root/caddy/"
+        state: absent
+    - name: Create rathole config
+      ansible.builtin.file:
+        path: "/root/rathole/config"
         state: directory
-        mode: '0755'
-      loop:
-        - "config"
-        - "data"
-        - "caddy_config"
-    - name: Create caddy configs
+        mode: '0775'
+    - name: deploy template
       ansible.builtin.template:
-        src: "templates/ext-Caddyfile.j2"
-        dest: "/root/caddy/config/Caddyfile"
+        src: "templates/ext-rathole-server.toml.j2"
+        dest: "/root/rathole/config/config.toml"
         mode: '0644'
-    - name: Run podman caddy container
-      become: true
+    - name: Deploy rathole podman container
       containers.podman.podman_container:
-        name: caddy
-        image: docker.io/caddy
-        state: absent # as opposed to "started"
-        ports:
-          - "80:80"
-          - "443:443"
+        name: rathole
+        image: docker.io/moonpiedumplings/rathole
+        network: host
         volumes:
-          - "/root/caddy/config/Caddyfile:/etc/caddy/Caddyfile"
-          - "/root/caddy/data:/data"
-          - "/root/caddy/caddy_config:/config"
-        cap_add:
-          - NET_ADMIN
-        restart_policy: "on-failure"
-        force_restart: true
+          - "/root/rathole:/config/"
+        command: "rathole --server /config/config.toml"
+
