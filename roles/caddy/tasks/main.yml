@@ -1,0 +1,34 @@
+- name: Do work as podmaner user
+  become: true
+  become_user: "{{ caddy_user }}"
+  block:
+    - name: Create caddy directory
+      ansible.builtin.file:
+        path: "{{ lookup('ansible.builtin.env', 'HOME') }}/caddy/{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "config"
+        - "data"
+        - "caddy_config"
+    - name: Create caddy configs
+      ansible.builtin.template:
+        src: "templates/Caddyfile.j2"
+        dest: "{{ lookup('ansible.builtin.env', 'HOME') }}/caddy/config/Caddyfile"
+        mode: '0644'
+    - name: Run podman caddy container
+      containers.podman.podman_container:
+        name: caddy
+        image: docker.io/caddy
+        state: started # or absent
+        ports:
+          - "8080:80"
+          - "8443:443"
+        volumes:
+          - "{{ lookup('ansible.builtin.env', 'HOME') }}/caddy/config/Caddyfile:/etc/caddy/Caddyfile"
+          - "{{ lookup('ansible.builtin.env', 'HOME') }}/caddy/data:/data"
+          - "{{ lookup('ansible.builtin.env', 'HOME') }}/caddy/caddy_config:/config"
+        cap_add:
+          - NET_ADMIN
+        restart_policy: "on-failure"
+        force_restart: true

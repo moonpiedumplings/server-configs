@@ -11,7 +11,7 @@
         path: "{{ lookup('ansible.builtin.env', 'HOME') }}/rathole/config"
         state: directory
         mode: '0775'
-    - name: deploy template
+    - name: Deploy template
       ansible.builtin.template:
         src: "templates/{{ rathole_role }}.toml.j2"
         dest: "{{ lookup('ansible.builtin.env', 'HOME') }}/rathole/config.toml"

@@ -1,0 +1,62 @@
+---
+- name: Create relevant configuration files
+  ansible.builtin.file:
+    path: "{{ lookup('ansible.builtin.env', 'HOME') }}/authentik/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop: ["media", "custom-templates", "certs", "postgres", "redis"]
+- name: Create relevant podman pod
+  containers.podman.podman_pod:
+    name: authentik_pod
+    state: present
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+      - "3389:3389"
+      - "6636:3389"
+- name: Authentik postgres database
+  containers.podman.podman_container:
+    name: authentik_postgres
+    pod: authentik_pod
+    image: "docker.io/library/postgres:12-alpine"
+    # healthcheck: 
+    volumes:
+      - "{{ lookup('ansible.builtin.env', 'HOME') }}/authentik/postgres:/var/lib/postgresql/data"
+- name: Authentik Redis database
+  containers.podman.podman_container:
+    name: authentik_redis
+    pod: authentik_pod
+    image: docker.io/library/redis:alpine
+    command: --save 60 1 --loglevel warning
+    volumes:
+      - "{{ lookup('ansible.builtin.env', 'HOME') }}/redis:/data"
+- name: Create authentik server
+  containers.podman.podman_container:
+    name: authentik_server
+    image: "ghcr.io/goauthentik/server:{{ authentik_tag }}"
+    pod: authentik_pod
+    environment:
+      AUTHENTIK_REDIS__HOST: localhost
+      AUTHENTIK_POSTGRESQL__HOST: localhost
+      AUTHENTIK_POSTGRESQL__USER: "{{ authentik_postgres_user}}"
+      AUTHENTIK_POSTGRESQL__NAME: "{{ authentik_postgres_db }}"
+      AUTHENTIK_POSTGRESQL__PASSWORD: "{{ authentik_postgres_password }}"
+    volumes:
+        - "{{ lookup('ansible.builtin.env', 'HOME') }}/authentik/media:/media"
+        - "{{ lookup('ansible.builtin.env', 'HOME') }}/authentik//certs:/certs"
+        - "{{ lookup('ansible.builtin.env', 'HOME') }}/authentik/custom-templates:/templates"
+- name: Create authentik worker
+  containers.podman.podman_container:
+    name: authentik_worker
+    image: "ghcr.io/goauthentik/server:{{ authentik_tag }}"
+    command: worker
+    environment:
+      AUTHENTIK_REDIS__HOST: localhost
+      AUTHENTIK_POSTGRESQL__HOST: localhost
+      AUTHENTIK_POSTGRESQL__USER: "{{ authentik_postgres_user}}"
+      AUTHENTIK_POSTGRESQL__NAME: "{{ authentik_postgres_db }}"
+      AUTHENTIK_POSTGRESQL__PASSWORD: "{{ authentik_postgres_password }}"
+      volumes:
+        - "{{ lookup('ansible.builtin.env', 'HOME') }}/authentik/media:/media"
+        - "{{ lookup('ansible.builtin.env', 'HOME') }}/authentik//certs:/certs"
+        - "{{ lookup('ansible.builtin.env', 'HOME') }}/authentik/custom-templates:/templates"

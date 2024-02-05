@@ -1,0 +1,10 @@
+---
+
+
+authentik_tag: "2023.10.7" # Version of authentik docker containers to pull
+
+authentik_postgres_db: "authentik"
+
+authentik_postgres_user: "authentik"
+
+authentik_postgres_password: "authentik"

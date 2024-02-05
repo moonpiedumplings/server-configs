@@ -4,14 +4,12 @@
 
   vars:
     sample_var: "a string"
-  
+
   roles:
     - role: rathole
+    - role: caddy
 
   tasks:
-    - name: hello
-      ansible.builtin.debug:
-        msg: "hello?"
     - name: Install relevant packages
       become: true
       ansible.builtin.apt:
@@ -20,37 +18,3 @@
       # Acl is needed for unprivileged user escalation:
       # https://docs.ansible.com/ansible-core/2.16/playbook_guide/playbooks_privilege_escalation.html#risks-of-becoming-an-unprivileged-user
       loop: [virt-manager, acl, podman, podman-compose]
-    - name: Do work as podmaner user
-      become: true
-      become_user: podmaner
-      block:
-        - name: Create caddy directory
-          ansible.builtin.file:
-            path: "/home/podmaner/caddy/{{ item }}"
-            state: directory
-            mode: '0755'
-          loop:
-            - "config"
-            - "data"
-            - "caddy_config"
-        - name: Create caddy configs
-          ansible.builtin.template:
-            src: "templates/int-Caddyfile.j2"
-            dest: "/home/podmaner/caddy/config/Caddyfile"
-            mode: '0644'
-        - name: Run podman caddy container
-          containers.podman.podman_container:
-            name: caddy
-            image: docker.io/caddy
-            state: started # or absent
-            ports:
-              - "8080:80"
-              - "8443:443"
-            volumes:
-              - "/home/podmaner/caddy/config/Caddyfile:/etc/caddy/Caddyfile"
-              - "/home/podmaner/caddy/data:/data"
-              - "/home/podmaner/caddy/caddy_config:/config"
-            cap_add:
-              - NET_ADMIN
-            restart_policy: "on-failure"
-            force_restart: true
