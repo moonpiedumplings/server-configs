@@ -2,9 +2,13 @@
   become: true
   become_user: "{{ caddy_user }}"
   block:
+    - name: Get $HOME environment variable
+      ansible.builtin.command: "echo $HOME"
+      register: homepath
+      changed_when: false
     - name: Create caddy directory
       ansible.builtin.file:
-        path: "{{ lookup('ansible.builtin.env', 'HOME') }}/caddy/{{ item }}"
+        path: "{{ homepath.stdout }}/caddy/{{ item }}"
         state: directory
         mode: '0755'
       loop:
@@ -14,7 +18,7 @@
     - name: Create caddy configs
       ansible.builtin.template:
         src: "templates/Caddyfile.j2"
-        dest: "{{ lookup('ansible.builtin.env', 'HOME') }}/caddy/config/Caddyfile"
+        dest: "{{ homepath.stdout }}/caddy/config/Caddyfile"
         mode: '0644'
     - name: Run podman caddy container
       containers.podman.podman_container:
@@ -25,9 +29,9 @@
           - "8080:80"
           - "8443:443"
         volumes:
-          - "{{ lookup('ansible.builtin.env', 'HOME') }}/caddy/config/Caddyfile:/etc/caddy/Caddyfile"
-          - "{{ lookup('ansible.builtin.env', 'HOME') }}/caddy/data:/data"
-          - "{{ lookup('ansible.builtin.env', 'HOME') }}/caddy/caddy_config:/config"
+          - "{{ homepath.stdout }}/caddy/config/Caddyfile:/etc/caddy/Caddyfile"
+          - "{{ homepath.stdout }}/caddy/data:/data"
+          - "{{ homepath.stdout }}/caddy/caddy_config:/config"
         cap_add:
           - NET_ADMIN
         restart_policy: "on-failure"

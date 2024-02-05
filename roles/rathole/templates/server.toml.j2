@@ -1,6 +1,6 @@
 # server.toml
 [server]
-bind_addr = "10.10.11.1:2333" # Bind to wireguard
+bind_addr = "{{ rathole_server_ip }}:2333" # Bind to wireguard
 
 [server.services.http]
 token = "{{ rathole_secret }}" # Token that is used to authenticate the client for the service. Change to a arbitrary value.

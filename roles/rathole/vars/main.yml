@@ -10,4 +10,6 @@ rathole_container_upload: false
 
 rathole_user: root # User to run rathole as
 
-rathole_role: # "server" or "client", the role rathole should play. 
+rathole_role: # "server" or "client", the role rathole should play.
+
+rathole_server_ip: "" # Ip address of the rathole server

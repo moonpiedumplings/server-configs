@@ -3,6 +3,7 @@ all:
     moonstack:
       rathole_role: "client"
       rathole_user: podmaner
+      rathole_server_ip: "154.12.245.181"
       ansible_become_password: !vault |
           $ANSIBLE_VAULT;1.1;AES256
           66393665353864383064303135306434313263653363626663393737393137386636636663326632
@@ -13,6 +14,7 @@ all:
     moontron:
       rathole_role: "server"
       rathole_user: root
+      rathole_server_ip: "154.12.245.181"
   vars:
     rathole_secret: !vault |
           $ANSIBLE_VAULT;1.1;AES256

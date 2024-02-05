@@ -7,6 +7,10 @@
 
   roles:
     - role: rathole
+      vars:
+        rathole_role: "client"
+        rathole_user: podmaner
+        rathole_server_ip: "154.12.245.181"
     - role: caddy
 
   tasks:
