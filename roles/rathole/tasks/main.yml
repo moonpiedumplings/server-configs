@@ -1,26 +1,20 @@
 ---
 - name: Build the rathole container
-  when: rathole_container_build # stays false for now, but eventually will build and push to a registry
+  when: rathole_build_container
   ansible.builtin.include_tasks:
     file: tasks/container.yml
-
 - name: Do podmaner container
-  become: true
-  become_user: "{{ rathole_user }}"
+  become: "{{ rathole_user }}"
   block:
-    - name: Get $HOME environment variable
-      ansible.builtin.command: "echo $HOME"
-      register: homepath
-      changed_when: false
     - name: Create rathole config
       ansible.builtin.file:
-        path: "$HOME/rathole/config"
+        path: "{{ lookup('ansible.builtin.env', 'HOME') }}/rathole/config"
         state: directory
         mode: '0775'
     - name: Deploy template
       ansible.builtin.template:
         src: "templates/{{ rathole_role }}.toml.j2"
-        dest: "$HOME/rathole/config.toml"
+        dest: "{{ lookup('ansible.builtin.env', 'HOME') }}/rathole/config.toml"
         mode: '0644'
     - name: Deploy rathole podman container
       containers.podman.podman_container:
@@ -28,5 +22,5 @@
         image: docker.io/moonpiedumplings/rathole
         network: host
         volumes:
-          - "{{ homepath.stdout }}/rathole:/config/"
+          - "{{ lookup('ansible.builtin.env', 'HOME') }}/rathole:/config/"
         command: "rathole --{{ rathole_role }} /config/config.toml"
