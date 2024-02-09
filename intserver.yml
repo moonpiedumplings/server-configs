@@ -13,6 +13,10 @@
         rathole_server_ip: "154.12.245.181"
     - role: caddy
       vars:
+        caddy_services:
+          - domain_name: "test.moonpiedumpl.ing"
+            port: 8000 # This is where the python http server runs by default, for my tests.
+        caddy_trusted_proxies: ['154.12.245.181']
 
   tasks:
     - name: Install relevant packages

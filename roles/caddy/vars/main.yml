@@ -1,1 +1,17 @@
 caddy_user: "podmaner" # User to deploy caddy as.
+
+caddy_http_port: 8080 # Rootless port
+
+caddy_https_port: 8443 # rootless port
+
+caddy_trusted_proxies: [] # List of trusted proxies. 
+
+
+# Dictionary of caddy hosts
+# EG
+# caddy_hosts:
+#   - domain_name: example.com
+#     port: 8080
+#     file_root: /filepath
+# Port and file path are mutually exclusive. 
+caddy_hosts:
