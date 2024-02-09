@@ -1,23 +1,24 @@
+#jinja2:lstrip_blocks: True
 {
     http_port {{ caddy_http_port }}
     https_port {{ caddy_https_port }}
-    {% if caddy_trusted_proxies | length > 0 -%}
+    {% if caddy_trusted_proxies | length > 0 %}
     trusted_proxies static {{ caddy_trusted_proxies | join(' ') }}
-    {% endif -%}
+    {% endif %}
 }
-{% for service in caddy_services -%}
+{% for service in caddy_services %}
 {{ service.domain_name }} {
-    {% if service.port is defined -%}
+    {% if service.port is defined %}
     reverse_proxy http://127.0.0.1:{{ service.port }}
-    {% if service.request_body is defined -%}
+    {% if service.request_body is defined %}
     request_body {
         max_size 2048MB
     }
-    {% endif -%}
-    {% endif -%}
-    {% if service.file_root is defined -%}
+    {% endif %}
+    {% endif %}
+    {% if service.file_root is defined %}
     root * {{ service.file_root }}
     file_server
-    {% endif -%}
+    {% endif %}
 }
-{% endfor -%}
+{% endfor %}
