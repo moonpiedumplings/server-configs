@@ -2,9 +2,11 @@
 {
     http_port {{ caddy_http_port }}
     https_port {{ caddy_https_port }}
-    {% if caddy_trusted_proxies | length > 0 %}
-    trusted_proxies static {{ caddy_trusted_proxies | join(' ') }}
-    {% endif %}
+    servers {
+        {% if caddy_trusted_proxies | length > 0 %}
+        trusted_proxies static {{ caddy_trusted_proxies | join(' ') }}
+        {% endif %}
+    }
 }
 {% for service in caddy_services %}
 {{ service.domain_name }} {
