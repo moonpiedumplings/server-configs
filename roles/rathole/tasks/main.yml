@@ -24,8 +24,10 @@
     - name: Deploy rathole podman container
       containers.podman.podman_container:
         name: rathole
+        force_restart: true
         image: docker.io/moonpiedumplings/rathole
         network: host
         volumes:
           - "{{ homepath.stdout }}/rathole:/config/"
         command: "rathole --{{ rathole_role }} /config/config.toml"
+        restart_policy: "always"

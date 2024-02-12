@@ -9,6 +9,11 @@
         rathole_role: "server"
         rathole_user: root
         rathole_server_ip: "154.12.245.181"
+        rathole_services:
+          - name: http
+            bind_addr: "0.0.0.0:80"
+          - name: https
+            bind_addr: "0.0.0.0:443"
 
   tasks:
     # - name: Create rathole config

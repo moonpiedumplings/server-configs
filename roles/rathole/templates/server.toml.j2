@@ -1,11 +1,13 @@
+#jinja2:lstrip_blocks: True
 # server.toml
+
 [server]
-bind_addr = "{{ rathole_server_ip }}:2333" # Bind to wireguard
+bind_addr = "{{ rathole_server_ip }}:2333" # Bind to this address
 
-[server.services.http]
-token = "{{ rathole_secret }}" # Token that is used to authenticate the client for the service. Change to a arbitrary value.
-bind_addr = "0.0.0.0:80"
+{% for service in rathole_services %}
 
-[server.services.httpd]
+
+[server.services.{{ service.name }}]
 token = "{{ rathole_secret }}"
-bind_addr = "0.0.0.0:443"
+bind_addr = "{{ service.bind_addr }}"
+{% endfor %}

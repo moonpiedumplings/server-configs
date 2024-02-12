@@ -1,12 +1,10 @@
-# client.toml
+#jinja2:lstrip_blocks: True
 [client]
 remote_addr = "{{ rathole_server_ip }}:2333" # The address of the server. The port must be the same with the port in `server.bind_addr`
 
-[client.services.http]
-token = "{{ rathole_secret }}" # Must be the same with the server to pass the validation
-local_addr = "127.0.0.1:8080" # The address of the service that needs to be forwarded
+{% for service in rathole_services %}
 
-
-[client.services.httpd]
+[client.services.{{ service.name }}]
 token = "{{ rathole_secret }}"
-local_addr = "127.0.0.1:8443"
+local_addr = "{{ service.local_addr }}"
+{% endfor %}
