@@ -25,6 +25,7 @@
         name: caddy
         image: docker.io/caddy
         state: started # or absent
+        recreate: true
         network: host
         volumes:
           - "{{ homepath.stdout }}/caddy/config/Caddyfile:/etc/caddy/Caddyfile"

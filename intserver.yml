@@ -5,6 +5,17 @@
   vars:
     sample_var: "a string"
 
+  tasks:
+    - name: Install relevant packages
+      become: true
+      ansible.builtin.apt:
+        # name: "{{ item }}"
+        name: [virt-manager, acl, podman, podman-compose]
+        state: present
+      # Acl is needed for unprivileged user escalation:
+      # https://docs.ansible.com/ansible-core/2.16/playbook_guide/playbooks_privilege_escalation.html#risks-of-becoming-an-unprivileged-user
+      # loop: [virt-manager, acl, podman, podman-compose]
+
   roles:
     - role: rathole
       vars:
@@ -22,13 +33,7 @@
           - domain_name: "test.moonpiedumpl.ing"
             port: 8000 # This is where the python http server runs by default, for my tests.
         caddy_trusted_proxies: ['154.12.245.181']
+    - role: authentik
+      vars:
 
-  tasks:
-    - name: Install relevant packages
-      become: true
-      ansible.builtin.apt:
-        name: "{{ item }}"
-        state: present
-      # Acl is needed for unprivileged user escalation:
-      # https://docs.ansible.com/ansible-core/2.16/playbook_guide/playbooks_privilege_escalation.html#risks-of-becoming-an-unprivileged-user
-      loop: [virt-manager, acl, podman, podman-compose]
+  

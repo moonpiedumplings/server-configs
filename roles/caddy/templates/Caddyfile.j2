@@ -7,6 +7,9 @@
         trusted_proxies static {{ caddy_trusted_proxies | join(' ') }}
         {% endif %}
     }
+    email {{ email_address }}
+    
+    auto_https disable_redirects
 }
 {% for service in caddy_services %}
 {{ service.domain_name }} {
@@ -24,3 +27,8 @@
     {% endif %}
 }
 {% endfor %}
+
+
+hello.moonpiedumpl.ing {
+    respond "Hello World!"
+}
