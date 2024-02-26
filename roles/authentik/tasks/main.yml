@@ -76,6 +76,7 @@
         recreate: true
         state: started
         name: authentik_worker
+        pod: authentik_pod
         image: "ghcr.io/goauthentik/server:{{ authentik_tag }}"
         command: worker
         env:

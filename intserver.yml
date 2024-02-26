@@ -32,6 +32,8 @@
         caddy_services:
           - domain_name: "test.moonpiedumpl.ing"
             port: 8000 # This is where the python http server runs by default, for my tests.
+          # - domain_name: "sso.moonpiedumpl.ing"
+          #   port: 9000
         caddy_trusted_proxies: ['154.12.245.181']
     - role: authentik
       vars:
