@@ -87,6 +87,7 @@
           AUTHENTIK_POSTGRESQL__PASSWORD: "{{ authentik_postgres_password }}"
           AUTHENTIK_SECRET_KEY: "{{ authentik_secret_key }}"
         volumes:
+          # - media:/media"
           - "{{ homepath.stdout }}/authentik/media:/media"
           - "{{ homepath.stdout }}/authentik/certs:/certs"
           - "{{ homepath.stdout }}/authentik/custom-templates:/templates"
