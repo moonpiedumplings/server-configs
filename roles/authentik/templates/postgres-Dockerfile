@@ -1,0 +1,4 @@
+FROM docker.io/library/postgres:12-alpine
+
+RUN echo "authentik:x:1000:1000::/authentik:/usr/sbin/nologin" > /etc/passwd
+

@@ -11,3 +11,5 @@ authentik_postgres_user: "authentik"
 authentik_postgres_password: "authentik"
 
 authentik_secret_key: "authentik"
+
+authentik_cleanup: false # delete all directories, including what is supposed to be persistent config data. 

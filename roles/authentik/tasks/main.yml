@@ -7,6 +7,13 @@
       ansible.builtin.command: "echo $HOME"
       register: homepath
       changed_when: false
+    # REMOVE ON MAIN DEPLOY
+    - name: Destroy relevant config files
+      when: authentik_cleanup
+      become: true
+      ansible.builtin.file:
+        path: "{{ homepath.stdout }}/authentik"
+        state: absent
     - name: Create relevant configuration files
       ansible.builtin.file:
         path: "{{ homepath.stdout }}/authentik/{{ item }}"
@@ -17,21 +24,35 @@
       containers.podman.podman_pod:
         name: authentik_pod
         recreate: true
-        userns: keep-id
+        userns: keep-id:uid=1000,gid=1000
         state: started
         ports:
           - "9000:9000"
           - "9443:9443"
           - "3389:3389"
           - "6636:3389"
+    - name: Template postgres dockerfile
+      ansible.builtin.template:
+        src: templates/postgres-Dockerfile
+        dest: "{{ homepath.stdout }}/authentik/postgres/Dockerfile"
+    - name: Build postgres image
+      containers.podman.podman_image:
+        name: moonpiedumplings/authentik_postgres
+        path: "{{ homepath.stdout }}/authentik/postgres/"
+        tag: 12
+    - name: Delete dockerfile when done
+      ansible.builtin.file:
+        path: "{{ homepath.stdout }}/authentik/postgres/Dockerfile"
+        state: absent
     - name: Authentik postgres database
       containers.podman.podman_container:
         recreate: true
         state: started
-        # userns: keep-uid
         name: authentik_postgres
         pod: authentik_pod
-        image: "docker.io/library/postgres:12-alpine"
+        user: 1000:1000
+        image: "moonpiedumplings/authentik_postgres:12"
+        # image: "docker.io/library/postgres:12-alpine"
         # healthcheck: 
         volumes:
           - "{{ homepath.stdout }}/authentik/postgres:/var/lib/postgresql/data"
@@ -59,6 +80,7 @@
         state: started
         name: authentik_server
         image: "ghcr.io/goauthentik/server:{{ authentik_tag }}"
+        command: server
         pod: authentik_pod
         env:
           AUTHENTIK_REDIS__HOST: localhost
