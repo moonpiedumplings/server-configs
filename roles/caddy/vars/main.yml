@@ -7,6 +7,14 @@ caddy_https_port: 8443 # rootless port
 caddy_trusted_proxies: [] # List of trusted proxies. 
 
 
+# list of caddy plugins to install, link to the git repo
+# See: https://caddyserver.com/docs/build#docker
+# Follow that format, don't use https:// before url link
+caddy_plugins: [] 
+
+caddy_version: "2.7.6" # version of caddy dockerfile
+
+
 # Dictionary of caddy hosts
 # EG
 # caddy_hosts:

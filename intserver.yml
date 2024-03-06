@@ -17,24 +17,25 @@
   #     # loop: [virt-manager, acl, podman, podman-compose]
 
   roles:
-    # - role: rathole
-    #   vars:
-    #     rathole_role: "client"
-    #     rathole_user: podmaner
-    #     rathole_server_ip: "154.12.245.181"
-    #     rathole_services:
-    #       - name: http
-    #         local_addr: "127.0.0.1:8080"
-    #       - name: https
-    #         local_addr: "127.0.0.1:8443"
-    # - role: caddy
-    #   vars:
-    #     caddy_services:
-    #       - domain_name: "test.moonpiedumpl.ing"
-    #         port: 8000 # This is where the python http server runs by default, for my tests.
-    #       # - domain_name: "sso.moonpiedumpl.ing"
-    #       #   port: 9000
-    #     caddy_trusted_proxies: ['154.12.245.181']
+    - role: rathole
+      vars:
+        rathole_role: "client"
+        rathole_user: podmaner
+        rathole_server_ip: "154.12.245.181"
+        rathole_services:
+          - name: http
+            local_addr: "127.0.0.1:8080"
+          - name: https
+            local_addr: "127.0.0.1:8443"
+    - role: caddy
+      vars:
+        caddy_services:
+          - domain_name: "test.moonpiedumpl.ing"
+            port: 8000 # This is where the python http server runs by default, for my tests.
+          - domain_name: "sso.moonpiedumpl.ing"
+            port: 9000
+        caddy_trusted_proxies: ['154.12.245.181']
+        caddy_plugins: ["github.com/greenpau/caddy-security"]
     - role: authentik
       vars:
         authentik_cleanup: true

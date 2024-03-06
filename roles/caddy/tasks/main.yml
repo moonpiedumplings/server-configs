@@ -24,21 +24,21 @@
       ansible.builtin.template:
         src: templates/Dockerfile.j2
         dest: "{{ homepath.stdout }}/caddy/Dockerfile"
-    - name: Build postgres image
+    - name: Build caddy image
       containers.podman.podman_image:
-        name: moonpiedumplings/caddy
+        name: local/caddy
         path: "{{ homepath.stdout }}/caddy/"
         tag: latest
     - name: Delete dockerfile when done
       ansible.builtin.file:
-        path: "{{ homepath.stdout }}/authentik/postgres/Dockerfile"
+        path: "{{ homepath.stdout }}/caddy/Dockerfile"
         state: absent
-    - name: Run podman caddy container
+    - name: Run caddy container
       containers.podman.podman_container:
         name: caddy
-        image: moonpiedumplings/caddy
+        image: localhost/local/caddy:latest
         # image: docker.io/caddy
-        state: started # or absent
+        state: started # or absent  
         recreate: true
         network: host
         volumes:
