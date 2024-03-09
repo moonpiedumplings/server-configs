@@ -4,6 +4,8 @@ caddy_http_port: 8080 # Rootless port
 
 caddy_https_port: 8443 # rootless port
 
+caddy_auto_https: "disable_redirects" # String
+
 caddy_trusted_proxies: [] # List of trusted proxies. 
 
 
@@ -14,6 +16,8 @@ caddy_plugins: []
 
 caddy_version: "2.7.6" # version of caddy dockerfile
 
+caddy_debug: false
+
 
 # Dictionary of caddy hosts
 # EG
@@ -23,3 +27,6 @@ caddy_version: "2.7.6" # version of caddy dockerfile
 #     file_root: /filepath
 # Port and file path are mutually exclusive. 
 caddy_hosts:
+
+
+caddy_cleanup: false # delete all folders and configs

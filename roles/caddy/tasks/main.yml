@@ -6,6 +6,11 @@
       ansible.builtin.command: "echo $HOME"
       register: homepath
       changed_when: false
+    - name: Caddy cleanup
+      when: caddy_cleanup
+      ansible.builtin.file:
+        path: "{{ homepath.stdout }}/caddy"
+        state: absent
     - name: Create caddy directory
       ansible.builtin.file:
         path: "{{ homepath.stdout }}/caddy/{{ item }}"
@@ -26,7 +31,7 @@
         dest: "{{ homepath.stdout }}/caddy/Dockerfile"
     - name: Build caddy image
       containers.podman.podman_image:
-        name: local/caddy
+        name: caddy
         path: "{{ homepath.stdout }}/caddy/"
         tag: latest
     - name: Delete dockerfile when done
@@ -36,8 +41,8 @@
     - name: Run caddy container
       containers.podman.podman_container:
         name: caddy
-        image: localhost/local/caddy:latest
-        # image: docker.io/caddy
+        image: localhost/caddy
+        #image: docker.io/library/caddy:{{ caddy_version }}
         state: started # or absent  
         recreate: true
         network: host

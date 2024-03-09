@@ -9,7 +9,13 @@
     }
     email {{ email_address }}
     
-    auto_https disable_redirects
+    auto_https {{ caddy_auto_https }}
+
+
+    {% if caddy_debug %}
+    debug
+    {% endif %}
+    
 }
 {% for service in caddy_services %}
 {{ service.domain_name }} {
@@ -25,10 +31,12 @@
     root * {{ service.file_root }}
     file_server
     {% endif %}
+    
+    tls {
+        issuer acme {
+            alt_http_port {{ caddy_http_port }}
+            alt_tlsalpn_port {{ caddy_https_port }}
+        }
+    }
 }
 {% endfor %}
-
-
-hello.moonpiedumpl.ing {
-    respond "Hello World!"
-}
