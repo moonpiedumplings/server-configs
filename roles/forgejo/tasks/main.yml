@@ -1,0 +1,45 @@
+---
+- name: Do forgejo things
+  become: true
+  become_user: "{{ forgejo_user }}"
+  block:
+    # - name: Cleanup
+    #   when: forgejo_cleanup
+    #   ansible.builtin.file:
+    - name: Ensure forgejo data folders exist
+      ansible.builtin.file:
+        path: forgejo/{{ item }}
+        mode: '0755'
+      loop: ['data']
+    - name: Podman pod
+      containers.podman.podman_pod:
+        
+    - name: Build postgres image
+      containers.podman.podman_image:
+        name: moonpiedumplings/authentik_postgres
+        path: "{{ homepath.stdout }}/authentik/postgres/"
+        tag: 12
+    - name: Delete dockerfile when done
+      ansible.builtin.file:
+        path: "{{ homepath.stdout }}/authentik/postgres/Dockerfile"
+        state: absent
+    - name: Forgejo postgres database
+      containers.podman.podman_container:
+        recreate: true
+        state: started
+        name: authentik_postgres
+        pod: authentik_pod
+        user: 1000:1000
+        image: "moonpiedumplings/authentik_postgres:12"
+        # image: "docker.io/library/postgres:12-alpine"
+        # healthcheck: 
+        volumes:
+          - "{{ homepath.stdout }}/authentik/postgres:/var/lib/postgresql/data"
+        env:
+          AUTHENTIK_SECRET_KEY: "{{ authentik_secret_key }}"
+          POSTGRES_PASSWORD: "{{ authentik_postgres_password }}"
+          POSTGRES_USER: "{{ authentik_postgres_user }}"
+          POSTGRES_DB: "{{ authentik_postgres_db }}"
+
+        
+  

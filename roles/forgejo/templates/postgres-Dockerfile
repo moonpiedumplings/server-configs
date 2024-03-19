@@ -1,0 +1,4 @@
+FROM docker.io/library/postgres:12-alpine
+
+RUN echo "forgejo:x:1000:1000::/forgejo:/usr/sbin/nologin" > /etc/passwd
+
