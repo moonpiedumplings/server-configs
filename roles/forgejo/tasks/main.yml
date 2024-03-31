@@ -13,33 +13,42 @@
       loop: ['data']
     - name: Podman pod
       containers.podman.podman_pod:
-        
+        name: forgejo_pod
+        recreate: true
+        userns: keep-id:uid=1000,gid=1000
+        state: started
+        # ports:
+        #   - "9000:9000"
+        #   - "9443:9443"
+        #   - "3389:3389"
+        #   - "6636:3389"
     - name: Build postgres image
       containers.podman.podman_image:
-        name: moonpiedumplings/authentik_postgres
-        path: "{{ homepath.stdout }}/authentik/postgres/"
+        name: moonpiedumplings/forgejo_postgres
+        path: "{{ homepath.stdout }}/forgejo/postgres/"
         tag: 12
     - name: Delete dockerfile when done
       ansible.builtin.file:
-        path: "{{ homepath.stdout }}/authentik/postgres/Dockerfile"
+        path: "{{ homepath.stdout }}/forgejo/postgres/Dockerfile"
         state: absent
     - name: Forgejo postgres database
       containers.podman.podman_container:
         recreate: true
         state: started
-        name: authentik_postgres
-        pod: authentik_pod
+        name: forgejo_postgres
+        pod: forgejo_pod
         user: 1000:1000
-        image: "moonpiedumplings/authentik_postgres:12"
+        image: "moonpiedumplings/forgejo_postgres:12"
         # image: "docker.io/library/postgres:12-alpine"
         # healthcheck: 
         volumes:
-          - "{{ homepath.stdout }}/authentik/postgres:/var/lib/postgresql/data"
+          - "{{ homepath.stdout }}/forgejo/postgres:/var/lib/postgresql/data"
         env:
-          AUTHENTIK_SECRET_KEY: "{{ authentik_secret_key }}"
-          POSTGRES_PASSWORD: "{{ authentik_postgres_password }}"
-          POSTGRES_USER: "{{ authentik_postgres_user }}"
-          POSTGRES_DB: "{{ authentik_postgres_db }}"
+          forgejo_SECRET_KEY: "{{ forgejo_secret_key }}"
+          POSTGRES_PASSWORD: "{{ forgejo_postgres_password }}"
+          POSTGRES_USER: "{{ forgejo_postgres_user }}"
+          POSTGRES_DB: "{{ forgejo_postgres_db }}"
+    - name: 
 
         
   
