@@ -1,3 +1,11 @@
 forgejo_user: podmaner
 
 forgejo_cleanup: false
+
+forgejo_version: "7-rootless"
+
+forgejo_postgres_db: forgejo
+
+forgejo_postgres_pass: forgejo
+
+forgejo_postgres_user: forgejo

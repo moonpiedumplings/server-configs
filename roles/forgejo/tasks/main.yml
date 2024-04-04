@@ -3,25 +3,34 @@
   become: true
   become_user: "{{ forgejo_user }}"
   block:
-    # - name: Cleanup
-    #   when: forgejo_cleanup
+    - name: Get $HOME environment variable
+      ansible.builtin.command: "echo $HOME"
+      register: homepath
+      changed_when: false
+    - name: Cleanup
+      when: forgejo_cleanup
+      ansible.builtin.file:
+        state: absent
+        path: "{{ homepath.stdout }}/forgejo"
+    # - name: Ensure forgejo folder exists
     #   ansible.builtin.file:
+    #     path: "{{ homepath.stdout }}/forgejo"
+    #     mode: '0755'
     - name: Ensure forgejo data folders exist
       ansible.builtin.file:
-        path: forgejo/{{ item }}
+        path: "{{ homepath.stdout }}/forgejo/{{ item }}"
+        state: directory
         mode: '0755'
-      loop: ['data']
+      loop: ['data', 'postgres']
     - name: Podman pod
       containers.podman.podman_pod:
         name: forgejo_pod
         recreate: true
         userns: keep-id:uid=1000,gid=1000
         state: started
-        # ports:
-        #   - "9000:9000"
-        #   - "9443:9443"
-        #   - "3389:3389"
-        #   - "6636:3389"
+        ports:
+          - "3000:3000"
+          - "8022:22"
     - name: Build postgres image
       containers.podman.podman_image:
         name: moonpiedumplings/forgejo_postgres
@@ -35,7 +44,7 @@
       containers.podman.podman_container:
         recreate: true
         state: started
-        name: forgejo_postgres
+        name: forgejo_db
         pod: forgejo_pod
         user: 1000:1000
         image: "moonpiedumplings/forgejo_postgres:12"
@@ -44,11 +53,30 @@
         volumes:
           - "{{ homepath.stdout }}/forgejo/postgres:/var/lib/postgresql/data"
         env:
-          forgejo_SECRET_KEY: "{{ forgejo_secret_key }}"
           POSTGRES_PASSWORD: "{{ forgejo_postgres_password }}"
           POSTGRES_USER: "{{ forgejo_postgres_user }}"
           POSTGRES_DB: "{{ forgejo_postgres_db }}"
-    - name: 
+    - name: Forgejo container
+      containers.podman.podman_container:
+        image: codeberg.org/forgejo/forgejo:{{ forgejo_version }}
+        name: forgejo
+        recreate: true
+        state: started
+        pod: forgejo_pod
+        user: 1000:1000
+        env:
+          USER_UID: 1000
+          USER_GID: 1000
+          FORGEJO_DB_TYPE: "postgres"
+          FORGEJO_DB_HOST: "127.0.0.1:3306"
+          FORGEJO__database__NAME: "{{ forgejo_postgres_db }}"
+          FORGEJO__database__USER: "{{ forgejo_postgres_user }}"
+          FORGEJO__database__PASSWD: "{{ forgejo_postgres_password }}"
+        volumes:
+          - "{{ homepath.stdout }}/forgejo:/data"
+          - /etc/timezone:/etc/timezone:ro
+          - /etc/localtime:/etc/localtime:ro
+            
 
         
   
