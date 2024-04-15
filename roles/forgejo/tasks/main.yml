@@ -31,6 +31,10 @@
         ports:
           - "3000:3000"
           - "8022:22"
+    - name: Template postgres dockerfile
+      ansible.builtin.template:
+        src: templates/postgres-Dockerfile
+        dest: "{{ homepath.stdout }}/forgejo/postgres/Dockerfile"
     - name: Build postgres image
       containers.podman.podman_image:
         name: moonpiedumplings/forgejo_postgres
