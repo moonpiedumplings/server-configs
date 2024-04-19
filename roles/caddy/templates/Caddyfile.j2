@@ -20,7 +20,7 @@
 }
 {% for service in caddy_services %}
 {{ service.domain_name }} {
-    {% if service.port is defined %}
+    {% if service.address is defined %}
     reverse_proxy {{ service.address }}
     {% if service.request_body is defined %}
     request_body {
