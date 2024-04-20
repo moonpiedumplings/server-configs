@@ -9,3 +9,8 @@ forgejo_postgres_db: forgejo
 forgejo_postgres_password: forgejo
 
 forgejo_postgres_user: forgejo
+
+
+# See config cheatsheet: https://forgejo.org/docs/latest/admin/config-cheat-sheet/
+# Dictionary of environment variables
+forgejo_config:

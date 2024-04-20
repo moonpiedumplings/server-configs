@@ -60,6 +60,19 @@
           POSTGRES_PASSWORD: "{{ forgejo_postgres_password }}"
           POSTGRES_USER: "{{ forgejo_postgres_user }}"
           POSTGRES_DB: "{{ forgejo_postgres_db }}"
+    - name: Generate forgejo config
+      ansible.builtin.set_fact:
+        forgejo_env_variables:
+          USER_UID: 1000
+          USER_GID: 1000
+          FORGEJO_DB_TYPE: "postgres"
+          FORGEJO_DB_HOST: "127.0.0.1:3306"
+          FORGEJO__database__NAME: "{{ forgejo_postgres_db }}"
+          FORGEJO__database__USER: "{{ forgejo_postgres_user }}"
+          FORGEJO__database__PASSWD: "{{ forgejo_postgres_password }}"
+    - name: Append custom config to forgejo config
+      ansible.builtin.set_fact:
+        forgejo_env_variables: "{{ forgejo_env_variables + forgjo_config }}"
     - name: Forgejo container
       containers.podman.podman_container:
         image: codeberg.org/forgejo/forgejo:{{ forgejo_version }}
@@ -68,14 +81,7 @@
         state: started
         pod: forgejo_pod
         user: 1000:1000
-        env:
-          USER_UID: 1000
-          USER_GID: 1000
-          FORGEJO_DB_TYPE: "postgres"
-          FORGEJO_DB_HOST: "127.0.0.1:3306"
-          FORGEJO__database__NAME: "{{ forgejo_postgres_db }}"
-          FORGEJO__database__USER: "{{ forgejo_postgres_user }}"
-          FORGEJO__database__PASSWD: "{{ forgejo_postgres_password }}"
+        env: "{{ forgejo_config }}"
         volumes:
           - "{{ homepath.stdout }}/forgejo:/data"
           - /etc/timezone:/etc/timezone:ro

@@ -38,10 +38,12 @@
             address: "http://127.0.0.1:3000"
         caddy_trusted_proxies: ['154.12.245.181']
         caddy_plugins: ["github.com/greenpau/caddy-security"]
-    # - role: authentik
-    #   vars:
-    #     authentik_cleanup: true
-    # - role: forgejo
-    #   vars:
-    #     forgejo_cleanup: true
+    - role: authentik
+      vars:
+        authentik_cleanup: true
+    - role: forgejo
+      vars:
+        forgejo_cleanup: true
+        forgejo_config:
+          APP_NAME: "MoonForge"
   
