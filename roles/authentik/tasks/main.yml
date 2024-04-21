@@ -20,6 +20,10 @@
         state: directory
         mode: '0755'
       loop: ["media", "custom-templates", "certs", "postgres", "redis"]
+    - name: Ensure podman pod is absent
+      containers.podman.podman_pod:
+        name: authentik_pod
+        state: absent
     - name: Create relevant podman pod  
       containers.podman.podman_pod:
         name: authentik_pod
@@ -74,10 +78,15 @@
           AUTHENTIK_SECRET_KEY: "{{ authentik_secret_key }}"
         volumes:
           - "{{ homepath.stdout }}/authentik/redis:/data"
+        generate_systemd: 
+          restart_policy: "always"
+          path: "{{ homepath.stdout }}/.config/containers/systemd/"
+    # PAUSE HERE
+    - ansible.builtin.pause:
     - name: Create authentik server
       containers.podman.podman_container:
         recreate: true
-        state: started
+        state: stopped
         name: authentik_server
         image: "ghcr.io/goauthentik/server:{{ authentik_tag }}"
         command: server
@@ -96,7 +105,7 @@
     - name: Create authentik worker
       containers.podman.podman_container:
         recreate: true
-        state: started
+        state: stopped
         name: authentik_worker
         pod: authentik_pod
         image: "ghcr.io/goauthentik/server:{{ authentik_tag }}"

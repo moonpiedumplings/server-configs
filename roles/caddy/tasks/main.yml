@@ -38,6 +38,10 @@
       ansible.builtin.file:
         path: "{{ homepath.stdout }}/caddy/Dockerfile"
         state: absent
+    - name: Delete caddy container
+      containers.podman.podman_container:
+        name: caddy
+        state: absent
     - name: Run caddy container
       containers.podman.podman_container:
         name: caddy

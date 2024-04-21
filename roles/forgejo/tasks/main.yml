@@ -22,7 +22,11 @@
         state: directory
         mode: '0755'
       loop: ['data', 'postgres']
-    - name: Podman pod
+    - name: Destroy podman pod
+      containers.podman.podman_pod:
+        name: forgejo_pod
+        state: absent
+    - name: Recreate podman pod
       containers.podman.podman_pod:
         name: forgejo_pod
         recreate: true
@@ -66,13 +70,13 @@
           USER_UID: 1000
           USER_GID: 1000
           FORGEJO_DB_TYPE: "postgres"
-          FORGEJO_DB_HOST: "127.0.0.1:3306"
+          FORGEJO_DB_HOST: "127.0.0.1:5432"
           FORGEJO__database__NAME: "{{ forgejo_postgres_db }}"
           FORGEJO__database__USER: "{{ forgejo_postgres_user }}"
           FORGEJO__database__PASSWD: "{{ forgejo_postgres_password }}"
     - name: Append custom config to forgejo config
       ansible.builtin.set_fact:
-        forgejo_env_variables: "{{ forgejo_env_variables + forgjo_config }}"
+        forgejo_config: "{{ forgejo_env_variables | combine(forgejo_config) }}"
     - name: Forgejo container
       containers.podman.podman_container:
         image: codeberg.org/forgejo/forgejo:{{ forgejo_version }}
