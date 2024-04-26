@@ -35,6 +35,9 @@
           - "9443:9443"
           - "3389:3389"
           - "6636:3389"
+        generate_systemd: 
+          restart_policy: "always"
+          path: "{{ homepath.stdout }}/.config/systemd/user/"
     - name: Template postgres dockerfile
       ansible.builtin.template:
         src: templates/postgres-Dockerfile
@@ -57,7 +60,9 @@
         user: 1000:1000
         image: "moonpiedumplings/authentik_postgres:12"
         # image: "docker.io/library/postgres:12-alpine"
-        # healthcheck: 
+        healthcheck: "CMD-SHELL pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"
+        healthcheck_retries: 5
+        healthcheck_start_period: 20s
         volumes:
           - "{{ homepath.stdout }}/authentik/postgres:/var/lib/postgresql/data"
         env:
@@ -74,15 +79,19 @@
         pod: authentik_pod
         image: docker.io/library/redis:alpine
         command: --save 60 1 --loglevel warning
+        healthcheck:
+          test: "CMD-SHELL redis-cli ping | grep PONG"
+          start_period: 20s
+          interval: 30s
+          retries: 5
+          timeout: 3s
         env:
           AUTHENTIK_SECRET_KEY: "{{ authentik_secret_key }}"
         volumes:
           - "{{ homepath.stdout }}/authentik/redis:/data"
-        generate_systemd: 
-          restart_policy: "always"
-          path: "{{ homepath.stdout }}/.config/containers/systemd/"
-    # PAUSE HERE
-    - ansible.builtin.pause:
+        # generate_systemd: 
+        #   restart_policy: "always"
+        #   path: "{{ homepath.stdout }}/.config/systemd/user/"
     - name: Create authentik server
       containers.podman.podman_container:
         recreate: true
@@ -91,6 +100,7 @@
         image: "ghcr.io/goauthentik/server:{{ authentik_tag }}"
         command: server
         pod: authentik_pod
+        requires: 
         env:
           AUTHENTIK_REDIS__HOST: localhost
           AUTHENTIK_POSTGRESQL__HOST: localhost
