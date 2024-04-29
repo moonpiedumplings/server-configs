@@ -29,7 +29,7 @@
         name: authentik_pod
         recreate: true
         userns: keep-id:uid=1000,gid=1000
-        state: started
+        state: created
         ports:
           - "9000:9000"
           - "9443:9443"
@@ -54,15 +54,21 @@
     - name: Authentik postgres database
       containers.podman.podman_container:
         recreate: true
-        state: started
+        state: stopped
         name: authentik_postgres
         pod: authentik_pod
         user: 1000:1000
         image: "moonpiedumplings/authentik_postgres:12"
         # image: "docker.io/library/postgres:12-alpine"
-        healthcheck: "CMD-SHELL pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"
-        healthcheck_retries: 5
-        healthcheck_start_period: 20s
+        # healthcheck: "CMD-SHELL pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"
+        # healthcheck_retries: 5
+        # healthcheck_start_period: 20s
+        healthcheck:
+          test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+          start_period: 20s
+          interval: 30s
+          retries: 5
+          timeout: 5s
         volumes:
           - "{{ homepath.stdout }}/authentik/postgres:/var/lib/postgresql/data"
         env:
@@ -73,7 +79,7 @@
     - name: Authentik Redis database
       containers.podman.podman_container:
         recreate: true
-        state: started
+        state: stopped
         # userns: keep-uid
         name: authentik_redis
         pod: authentik_pod
@@ -100,7 +106,9 @@
         image: "ghcr.io/goauthentik/server:{{ authentik_tag }}"
         command: server
         pod: authentik_pod
-        requires: 
+        requires:
+          - authentik_redis
+          - authentik_postgres
         env:
           AUTHENTIK_REDIS__HOST: localhost
           AUTHENTIK_POSTGRESQL__HOST: localhost
@@ -120,6 +128,9 @@
         pod: authentik_pod
         image: "ghcr.io/goauthentik/server:{{ authentik_tag }}"
         command: worker
+        requires:
+          - authentik_postgres
+          - authentik_redis
         env:
           AUTHENTIK_REDIS__HOST: localhost
           AUTHENTIK_POSTGRESQL__HOST: localhost
@@ -132,3 +143,16 @@
           - "{{ homepath.stdout }}/authentik/media:/media"
           - "{{ homepath.stdout }}/authentik/certs:/certs"
           - "{{ homepath.stdout }}/authentik/custom-templates:/templates"
+    
+    - name: Get current user uid
+      ansible.builtin.command: "id -u"
+      register: myuid
+    - name: Start authentik_pod user systemd service
+      ansible.builtin.systemd_service:
+        name: pod-authentik_pod
+        state: started
+        enabled: true
+        scope: user
+      environment:
+        XDG_RUNTIME_DIR: "/run/user/{{ myuid.stdout }}"
+
