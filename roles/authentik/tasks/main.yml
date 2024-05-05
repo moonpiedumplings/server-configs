@@ -38,6 +38,10 @@
         generate_systemd: 
           restart_policy: "always"
           path: "{{ homepath.stdout }}/.config/systemd/user/"
+          names: false
+          new: true
+    # PAUSE HERE
+    - ansible.builtin.pause:
     - name: Template postgres dockerfile
       ansible.builtin.template:
         src: templates/postgres-Dockerfile
